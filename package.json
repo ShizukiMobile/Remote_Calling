@@ -1,12 +1,16 @@
 {
-  "name": "Remote-Call-Server",
-  "version": "0.1.0",
-  "description": "Simple remote call system using Socket.IO",
+  "name": "remote-caller-server",
+  "version": "0.1.1b",
+  "description": "WebSocket signaling server for remote call system",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "socket.io": "^4.5.4"
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }
