@@ -1,0 +1,12 @@
+{
+  "name": "Remote-Call-Server",
+  "version": "0.1.0",
+  "description": "Simple remote call system using Socket.IO",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "socket.io": "^4.5.4"
+  }
+}
