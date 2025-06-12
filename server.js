@@ -6,7 +6,8 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: '*'
+    origin: 'https://shizukimobile.github.io', // クライアントのURLを明示
+    methods: ['GET', 'POST']
   }
 });
 
