@@ -55,3 +55,24 @@ app.post('/subscribe', express.json(), (req, res) => {
     message: 'Push Subscriptionを登録しました。'
   });
 });
+
+app.get('/test-push', async (req, res) => {
+  if (!pushSubscription) {
+    return res.status(400).send('Push Subscriptionがありません。');
+  }
+
+  try {
+    await webpush.sendNotification(
+      pushSubscription,
+      JSON.stringify({
+        title: 'リモート呼び出しシステム',
+        body: 'テスト通知です。'
+      })
+    );
+
+    res.send('Push通知を送信しました。');
+  } catch (err) {
+    console.error('Push通知の送信に失敗しました:', err);
+    res.status(500).send('Push通知の送信に失敗しました。');
+  }
+});
