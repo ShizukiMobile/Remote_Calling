@@ -30,9 +30,47 @@ io.on('connection', (socket) => {
     console.log(`${socket.id} joined room ${roomId}`);
   });
 
-  socket.on('call', (roomId) => {
-    socket.to(roomId).emit('call');  // 自分以外の同じルームの人に通知
-  });
+  socket.on('call', async (roomId) => {
+  // 既存のSocket.IOによる呼び出し
+  socket.to(roomId).emit('call');
+
+  // Push通知の送信先が登録されているか確認
+  if (
+    !pushSubscription ||
+    pushSubscriptionRoomId !== roomId
+  ) {
+    console.log(
+      `ルーム ${roomId} にPush通知の送信先がありません。`
+    );
+    return;
+  }
+
+  try {
+    await webpush.sendNotification(
+      pushSubscription,
+      JSON.stringify({
+        title: 'リモート呼び出しシステム',
+        body: '呼び出しがありました。'
+      })
+    );
+
+    console.log(
+      `ルーム ${roomId} にPush通知を送信しました。`
+    );
+  } catch (err) {
+    console.error('Push通知の送信に失敗しました:', err);
+
+    // 期限切れ・無効化されたSubscriptionへの対応
+    if (err.statusCode === 404 || err.statusCode === 410) {
+      pushSubscription = null;
+      pushSubscriptionRoomId = null;
+
+      console.log(
+        'Push Subscriptionが無効になったため、登録を解除しました。'
+      );
+    }
+  }
+});
 
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
@@ -45,11 +83,21 @@ server.listen(PORT, () => {
 });
 
 let pushSubscription = null;
+let pushSubscriptionRoomId = null;
 
 app.post('/subscribe', express.json(), (req, res) => {
-  pushSubscription = req.body.subscription;
+  const { subscription, roomId } = req.body;
 
-  console.log('Push Subscriptionを登録しました。');
+  if (!subscription || !roomId) {
+    return res.status(400).json({
+      message: 'SubscriptionまたはルームIDがありません。'
+    });
+  }
+
+  pushSubscription = subscription;
+  pushSubscriptionRoomId = roomId;
+
+  console.log(`Push Subscriptionをルーム ${roomId} に登録しました。`);
 
   res.status(201).json({
     message: 'Push Subscriptionを登録しました。'
